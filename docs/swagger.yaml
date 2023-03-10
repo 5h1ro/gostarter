@@ -1,0 +1,306 @@
+basePath: /
+definitions:
+  provider.Success:
+    properties:
+      code:
+        example: 200
+        type: integer
+      expire:
+        type: string
+      token:
+        type: string
+    type: object
+  request.AuthRequest:
+    properties:
+      email:
+        example: user@example.com
+        type: string
+      password:
+        example: "11111111"
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  request.CreatePostRequest:
+    properties:
+      content:
+        example: Lorem Ipsum
+        type: string
+      title:
+        example: New Post
+        type: string
+    required:
+    - content
+    - title
+    type: object
+  request.RegisterRequest:
+    properties:
+      email:
+        example: user@example.com
+        type: string
+      full_name:
+        type: string
+      password:
+        example: "11111111"
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  request.UpdatePostRequest:
+    properties:
+      content:
+        example: description
+        type: string
+      title:
+        example: Title 1
+        type: string
+    type: object
+  response.CollectionResponse:
+    properties:
+      collection: {}
+      meta:
+        $ref: '#/definitions/response.Meta'
+    type: object
+  response.Error:
+    properties:
+      code:
+        type: integer
+      message:
+        type: string
+    type: object
+  response.GetPostResponse:
+    properties:
+      content:
+        type: string
+      id:
+        type: integer
+      title:
+        type: string
+    type: object
+  response.Meta:
+    properties:
+      amount:
+        type: integer
+    type: object
+info:
+  contact: {}
+  description: This is a starter pack with go
+  title: go starter
+  version: "1.0"
+paths:
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Perform user login
+      operationId: user-login
+      parameters:
+      - description: User's credentials
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/request.AuthRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/provider.Success'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.Error'
+      summary: Authenticate a user
+      tags:
+      - User Actions
+  /post/{id}:
+    delete:
+      description: Delete post
+      operationId: posts-delete
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: Post deleted successfully
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete post
+      tags:
+      - Posts Actions
+    get:
+      description: Get post by id
+      operationId: get-post
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.GetPostResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get post by id
+      tags:
+      - Posts Actions
+    put:
+      consumes:
+      - application/json
+      description: Update post
+      operationId: posts-update
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Post title and content
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/request.UpdatePostRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Update post
+      tags:
+      - Posts Actions
+  /posts:
+    get:
+      description: Get all posts of all users
+      operationId: get-posts
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.CollectionResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get all posts
+      tags:
+      - Posts Actions
+    post:
+      consumes:
+      - application/json
+      description: Create post
+      operationId: posts-create
+      parameters:
+      - description: Post title and content
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/request.CreatePostRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad request
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Create post
+      tags:
+      - Posts Actions
+  /refresh:
+    get:
+      description: Refresh user's token
+      operationId: refresh-token
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/provider.Success'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Refresh token
+      tags:
+      - User Actions
+  /users:
+    post:
+      consumes:
+      - application/json
+      description: New user registration
+      operationId: user-register
+      parameters:
+      - description: User's email, password, full name
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/request.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully registered
+          schema:
+            type: string
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/response.Error'
+      summary: Register
+      tags:
+      - User Actions
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
